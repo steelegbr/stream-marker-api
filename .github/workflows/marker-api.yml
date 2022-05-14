@@ -15,4 +15,5 @@ jobs:
           python-version: ${{ env.PYTHON_VER }}
       - name: Run the black lint check
         run: |
+          pip install black
           black . --check
