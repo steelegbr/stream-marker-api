@@ -13,11 +13,16 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from fastapi import FastAPI
+from fastapi import FastAPI, File, Form, UploadFile
 
 app = FastAPI()
 
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
+@app.post("/")
+async def convert_file(
+    stream: UploadFile = File(...),
+    metadata_interval: int = Form(..., ge=1),
+    bitrate: int = Form(..., ge=16),
+    encoding: str = Form(..., regex="^audio\/\w+$"),
+):
+    return {"filename": stream.filename}
