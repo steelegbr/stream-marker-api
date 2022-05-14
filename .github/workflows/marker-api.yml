@@ -1,4 +1,5 @@
 name: marker-api
+on: [push]
 env:
   PYTHON_VER: 3.10
 
