@@ -13,9 +13,20 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+import logging
+from converter import to_markers_and_compressed_audio
 from fastapi import FastAPI, File, Form, UploadFile
 
+# Logging
+
+logging.config.fileConfig("logging.conf")
+logger = logging.getLogger(__name__)
+
+# Launch FastAPI
+
 app = FastAPI()
+
+# API endpoints
 
 
 @app.post("/")
@@ -29,4 +40,7 @@ async def convert_file(
         ..., regex="^audio\/\w+$", title="Content-Type headed for the stream"
     ),
 ):
-    return {"filename": stream.filename}
+    markers, compressed_audio = to_markers_and_compressed_audio(
+        stream.file, metadata_interval, bitrate, logger
+    )
+    return markers
