@@ -14,8 +14,10 @@
 """
 
 import logging
-from converter import to_markers_and_compressed_audio
+from converter import decompress_audio, to_markers_and_compressed_audio
 from fastapi import FastAPI, File, Form, UploadFile
+from fastapi.responses import StreamingResponse
+from io import BytesIO
 
 # Logging
 
@@ -43,4 +45,7 @@ async def convert_file(
     markers, compressed_audio = to_markers_and_compressed_audio(
         stream.file, metadata_interval, bitrate, logger
     )
-    return markers
+
+    decompressed_audio = decompress_audio(compressed_audio, logger)
+
+    return StreamingResponse(BytesIO(decompressed_audio), media_type="audio/wav")

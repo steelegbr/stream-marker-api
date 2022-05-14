@@ -13,9 +13,11 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+import ffmpeg
 import re
 from logging import Logger
 from struct import unpack
+from tempfile import NamedTemporaryFile
 from typing import BinaryIO, List
 
 SIZE_LENGTH_FIELD = 1
@@ -109,4 +111,39 @@ def to_markers_and_compressed_audio(
     except Exception as ex:
         logger.debug(f"Infinite loop crashed out: {ex}")
 
-    return (markers, compressed_audio)
+    return (markers, b"".join(compressed_audio))
+
+
+def decompress_audio(compressed: bytes, logger: Logger) -> bytes:
+    with NamedTemporaryFile() as temp_file_in, NamedTemporaryFile(
+        suffix=".wav"
+    ) as temp_file_out:
+
+        # Write what we have to disk
+
+        logger.debug(f"Writing to temp source file {temp_file_in.name}")
+        temp_file_in.write(compressed)
+        temp_file_in.flush()
+
+        # Trigger FFMPEG
+
+        logger.debug(f"Trigger FFMPEG to write to {temp_file_out.name}")
+        ffmpeg_stderr, ffmpeg_stdout = (
+            ffmpeg.input(temp_file_in.name)
+            .output(temp_file_out.name)
+            .overwrite_output()
+            .run(capture_stdout=True, capture_stderr=True)
+        )
+
+        # Read in what we got
+
+        logger.debug(f"FFMPEG STDERR: {ffmpeg_stderr}")
+        logger.debug(f"FFMPEG STDOUT: {ffmpeg_stdout}")
+
+        # Return the wave file
+
+        temp_file_out.seek(0)
+        decompressed_audio = temp_file_out.read()
+        logger.debug("Successfully decompressed audio.")
+
+    return decompressed_audio
