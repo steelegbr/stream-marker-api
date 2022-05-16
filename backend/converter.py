@@ -16,7 +16,6 @@
 import ffmpeg
 import re
 
-from io import BytesIO
 from logging import Logger
 from struct import unpack
 from tempfile import NamedTemporaryFile
