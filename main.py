@@ -14,7 +14,12 @@
 """
 
 import logging
-from converter import decompress_audio, to_markers_and_compressed_audio
+from converter import (
+    append_cue_chunks,
+    decode_wave_file,
+    decompress_audio,
+    to_markers_and_compressed_audio,
+)
 from fastapi import FastAPI, File, Form, UploadFile
 from fastapi.responses import StreamingResponse
 from io import BytesIO
@@ -46,6 +51,9 @@ async def convert_file(
         stream.file, metadata_interval, bitrate, logger
     )
 
-    decompressed_audio = decompress_audio(compressed_audio, logger)
+    decompressed_audio_file = decompress_audio(compressed_audio, logger)
+    decoded_audio_file = decode_wave_file(decompressed_audio_file, logger)
+    complete_audio_file = append_cue_chunks(decoded_audio_file, markers, logger)
 
-    return StreamingResponse(BytesIO(decompressed_audio), media_type="audio/wav")
+    logger.debug("Returning audio file to user")
+    return StreamingResponse(BytesIO(complete_audio_file), media_type="audio/wav")

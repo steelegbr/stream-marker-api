@@ -15,10 +15,20 @@
 
 import ffmpeg
 import re
+
+from io import BytesIO
 from logging import Logger
 from struct import unpack
 from tempfile import NamedTemporaryFile
-from typing import BinaryIO, List
+from typing import BinaryIO, List, Tuple, Union
+from wave_chunk_parser.chunks import (
+    CueChunk,
+    CuePoint,
+    FormatChunk,
+    LabelChunk,
+    ListChunk,
+    RiffChunk,
+)
 
 SIZE_LENGTH_FIELD = 1
 SIZE_CHUNK = 16
@@ -55,7 +65,7 @@ def extract_marker(
     # Create the marker
 
     marker = Marker()
-    marker.time = time
+    marker.time = round(time)
 
     # Extract the string component
 
@@ -81,11 +91,11 @@ def extract_marker(
 
 def to_markers_and_compressed_audio(
     raw: BinaryIO, metadata_interval: int, bitrate: int, logger: Logger
-) -> (List[Marker], bytes):
+) -> Union[List[Marker], bytes]:
     markers = []
     compressed_audio = []
     bitrate_bps = bitrate * 1000
-    ms_per_jump = 1000 / bitrate_bps * metadata_interval
+    ms_per_jump = 1000 * metadata_interval / bitrate_bps * 8
 
     current_ms = ms_per_jump
 
@@ -114,10 +124,9 @@ def to_markers_and_compressed_audio(
     return (markers, b"".join(compressed_audio))
 
 
-def decompress_audio(compressed: bytes, logger: Logger) -> bytes:
-    with NamedTemporaryFile() as temp_file_in, NamedTemporaryFile(
-        suffix=".wav"
-    ) as temp_file_out:
+def decompress_audio(compressed: bytes, logger: Logger) -> NamedTemporaryFile:
+    temp_file_out = NamedTemporaryFile(suffix=".wav")
+    with NamedTemporaryFile() as temp_file_in:
 
         # Write what we have to disk
 
@@ -146,4 +155,49 @@ def decompress_audio(compressed: bytes, logger: Logger) -> bytes:
         decompressed_audio = temp_file_out.read()
         logger.debug("Successfully decompressed audio.")
 
-    return decompressed_audio
+    return temp_file_out
+
+
+def decode_wave_file(file_handle: BinaryIO, logger: Logger) -> RiffChunk:
+    logger.debug("Attempting to decode file")
+    return RiffChunk.from_file(file_handle)
+
+
+def marker_to_cue_point(index: int, marker: Marker, sample_rate: int) -> CuePoint:
+    samples = sample_rate * marker.time // 1000
+    return CuePoint(index, samples, RiffChunk.CHUNK_DATA, 0, 0, samples)
+
+
+def markers_to_chunks(
+    markers: List[Marker], format_chunk: FormatChunk, logger: Logger
+) -> Tuple[CueChunk, ListChunk]:
+    sample_rate = format_chunk.sample_rate
+    logger.debug(f"Determined sample rate to be {sample_rate}Hz")
+
+    cue_points = [
+        marker_to_cue_point(index + 1, marker, sample_rate)
+        for index, marker in enumerate(markers)
+    ]
+    logger.debug(f"Converted {len(cue_points)} cue points")
+
+    labels = [
+        LabelChunk(index + 1, marker.text) for index, marker in enumerate(markers)
+    ]
+    logger.debug(f"Converted {len(labels)} labels")
+
+    return (CueChunk(cue_points), ListChunk(labels))
+
+
+def append_cue_chunks(
+    audio_file: RiffChunk, markers: List[Marker], logger: Logger
+) -> bytes:
+    logger.debug("Call into cue point append process")
+    cue_chunk, list_chunk = markers_to_chunks(
+        markers, audio_file.sub_chunks[RiffChunk.CHUNK_FORMAT], logger
+    )
+
+    audio_file.sub_chunks[RiffChunk.CHUNK_CUE] = cue_chunk
+    audio_file.sub_chunks[RiffChunk.CHUNK_LIST] = list_chunk
+
+    logger.debug("Attempting to encode the file for transmission")
+    return audio_file.to_bytes()
