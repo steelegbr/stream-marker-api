@@ -14,15 +14,28 @@
 */
 
 import React from 'react';
-import { BrowserRouter } from 'react-router-dom';
-import Layout from './pages/Layout';
+import { Route, Routes } from 'react-router-dom';
+import Step1 from '../pages/Step1';
+import Welcome from '../pages/Welcome';
+import Paths from './Paths';
 
-function App() {
-  return (
-    <BrowserRouter>
-      <Layout />
-    </BrowserRouter>
-  );
+const ApplicationRouter = (): React.ReactElement => {
+    return (
+        <Routes>
+            <Route
+                element={(
+                    <Step1/>
+                )}
+                path={Paths.step1.wildcard}
+            />
+            <Route
+                element={(
+                    <Welcome />
+                )}
+                path={Paths.base}
+            />
+        </Routes>
+    )
 }
 
-export default App;
+export default ApplicationRouter;

@@ -14,15 +14,24 @@
 */
 
 import React from 'react';
-import { BrowserRouter } from 'react-router-dom';
-import Layout from './pages/Layout';
+import { Container, Nav, Navbar } from 'react-bootstrap';
 
-function App() {
-  return (
-    <BrowserRouter>
-      <Layout />
-    </BrowserRouter>
-  );
+const Menu = (): React.ReactElement => {
+    return (
+        <Navbar>
+            <Container>
+                <Navbar.Brand>Shoutcast Metadata Converter</Navbar.Brand>
+                <Navbar.Toggle aria-controls='main-nav' />
+                <Navbar.Collapse id="main-nav">
+                    <Nav>
+                        <Nav.Link href="#">Step 1</Nav.Link>
+                        <Nav.Link href="#">Step 2</Nav.Link>
+                        <Nav.Link href="#">Step 3</Nav.Link>
+                    </Nav>
+                </Navbar.Collapse>
+            </Container>
+        </Navbar>
+    )
 }
 
-export default App;
+export default Menu;

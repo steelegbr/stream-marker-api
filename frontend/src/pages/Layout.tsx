@@ -14,15 +14,17 @@
 */
 
 import React from 'react';
-import { BrowserRouter } from 'react-router-dom';
-import Layout from './pages/Layout';
+import { Container } from 'react-bootstrap';
+import ApplicationRouter from '../components/ApplicationRouter';
+import Menu from '../components/Menu';
 
-function App() {
-  return (
-    <BrowserRouter>
-      <Layout />
-    </BrowserRouter>
-  );
+const Layout = (): React.ReactElement => {
+    return (
+        <Container>
+            <Menu/>
+            <ApplicationRouter />
+        </Container>
+    )
 }
 
-export default App;
+export default Layout;

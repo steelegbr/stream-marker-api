@@ -14,15 +14,27 @@
 */
 
 import React from 'react';
-import { BrowserRouter } from 'react-router-dom';
-import Layout from './pages/Layout';
+import { Container } from 'react-bootstrap';
+import { Route, Routes } from 'react-router-dom';
+import Paths from '../components/Paths';
+import UrlEntryForm from '../components/UrlEntryForm';
 
-function App() {
-  return (
-    <BrowserRouter>
-      <Layout />
-    </BrowserRouter>
-  );
+const Step1 = (): React.ReactElement => {
+    return (
+        <Container>
+            <h1>Step 1</h1>
+            <p>In this step you supply a stream URL and we capture it to your hard disk.</p>
+            <Routes>
+                <Route
+                    element={(
+                        <UrlEntryForm />
+                    )}
+                    path={Paths.step1.basePath}
+                />
+            </Routes>
+            
+        </Container>
+    )
 }
 
-export default App;
+export default Step1;

@@ -13,16 +13,15 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import React from 'react';
-import { BrowserRouter } from 'react-router-dom';
-import Layout from './pages/Layout';
-
-function App() {
-  return (
-    <BrowserRouter>
-      <Layout />
-    </BrowserRouter>
-  );
+const Paths = {
+    base: '/',
+    step1: {
+        base: '/step1/',
+        basePath: '/',
+        wildcard: '/step1/*'
+    },
+    step2: '/step2/*',
+    step3: '/step3/*',
 }
 
-export default App;
+export default Paths;
