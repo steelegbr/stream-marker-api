@@ -61,7 +61,6 @@ def capture_audio(capture_file_name: str, metadata_file_name: str, url: str):
                     output_file.write(response.raw.read(1000))
             except KeyboardInterrupt:
                 pass
-                
 
 
 @click.command()
