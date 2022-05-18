@@ -16,6 +16,10 @@
 import React, { useCallback, useState } from 'react';
 import { Button, Form } from 'react-bootstrap';
 import validator from 'validator';
+import { v4 as uuid } from 'uuid';
+import { Capture } from '../model/Capture';
+import { useNavigate } from 'react-router-dom';
+import Paths from './Paths';
 
 interface UrlEntryStatus {
     valid: boolean;
@@ -23,6 +27,7 @@ interface UrlEntryStatus {
 }
 
 const UrlEntryForm = (): React.ReactElement => {
+    const navigate = useNavigate();
     const [formStatus, setFormStatus] = useState<UrlEntryStatus>({
         valid: false,
         url: ''
@@ -38,13 +43,26 @@ const UrlEntryForm = (): React.ReactElement => {
         },
         [setFormStatus]
     )
+
+    const startCapture = useCallback(
+        () => {
+            const id = uuid();
+            const capture: Capture = {
+                url: formStatus.url
+            };
+            localStorage.setItem(id, JSON.stringify(capture));
+            navigate(`${Paths.step2.base}${id}`);
+        },
+        [formStatus.url, navigate]
+    );
+
     return (
         <Form>
             <Form.Group className="mb-3" controlId="url">
                 <Form.Label>Stream URL</Form.Label>
                 <Form.Control type="url" placeholder="Enter Stream URL" value={formStatus.url} onChange={updateUrl} />
             </Form.Group>
-            <Button variant="primary" type="submit" disabled={!formStatus.valid}>
+            <Button variant="primary" type="submit" disabled={!formStatus.valid} onClick={startCapture}>
                 Capture
             </Button>
         </Form>

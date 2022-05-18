@@ -13,18 +13,9 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-const Paths = {
-    base: '/',
-    step1: {
-        base: '/step1/',
-        basePath: '/',
-        wildcard: '/step1/*'
-    },
-    step2: {
-        base: '/step2/',
-        withId: '/step2/:id'
-    },
-    step3: '/step3/*',
+export interface Capture {
+    url: string;
+    bitrate?: number;
+    metadata_interval?: number;
+    audio?: Blob
 }
-
-export default Paths;

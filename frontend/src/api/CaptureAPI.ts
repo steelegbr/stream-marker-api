@@ -13,18 +13,16 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-const Paths = {
-    base: '/',
-    step1: {
-        base: '/step1/',
-        basePath: '/',
-        wildcard: '/step1/*'
-    },
-    step2: {
-        base: '/step2/',
-        withId: '/step2/:id'
-    },
-    step3: '/step3/*',
-}
+import axios, { AxiosRequestConfig } from 'axios';
+import { Capture } from '../model/Capture';
 
-export default Paths;
+export const streamAudio = (capture: Capture, progressCallback: any) => {
+    const config : AxiosRequestConfig = {
+        headers: {
+            'Icy-MetaData': 1
+        },
+        responseType: 'stream',
+        onDownloadProgress: progressCallback
+    };
+    return axios.get(capture.url, config);
+}

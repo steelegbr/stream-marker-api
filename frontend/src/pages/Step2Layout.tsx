@@ -14,25 +14,24 @@
 */
 
 import React from 'react';
-import { Container, Nav, Navbar } from 'react-bootstrap';
-import Paths from './Paths';
+import { Container, Spinner } from 'react-bootstrap';
 
-const Menu = (): React.ReactElement => {
+
+interface Props {
+    showSpinner: boolean;
+}
+
+const Step2Layout = ({ children, showSpinner }: React.PropsWithChildren<Props>): React.ReactElement => {
     return (
-        <Navbar>
-            <Container>
-                <Navbar.Brand>Shoutcast Metadata Converter</Navbar.Brand>
-                <Navbar.Toggle aria-controls='main-nav' />
-                <Navbar.Collapse id="main-nav">
-                    <Nav>
-                        <Nav.Link href={Paths.step1.base}>Step 1</Nav.Link>
-                        <Nav.Link href="#">Step 2</Nav.Link>
-                        <Nav.Link href={Paths.step3}>Step 3</Nav.Link>
-                    </Nav>
-                </Navbar.Collapse>
-            </Container>
-        </Navbar>
+        <Container>
+            <h1>Step 2</h1>
+            <p>In this step we perform the actual capture from the network.</p>
+            {showSpinner && (
+                <Spinner animation="border" variant="primary" />
+            )}
+            {children}
+        </Container>
     )
 }
 
-export default Menu;
+export default Step2Layout;
