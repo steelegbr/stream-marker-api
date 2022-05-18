@@ -36,7 +36,7 @@ app = FastAPI()
 # API endpoints
 
 
-@app.post("/")
+@app.post("/api/")
 async def convert_file(
     stream: UploadFile = File(..., title="A captured stream to extract markers from"),
     metadata_interval: int = Form(
