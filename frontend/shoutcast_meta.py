@@ -15,7 +15,7 @@
 
 import click
 import json
-import keyboard
+import signal
 from halo import Halo
 from requests import get
 from uuid import uuid4
@@ -27,7 +27,7 @@ def interface():
     pass
 
 
-@Halo(text="Capturing audio... press x to stop...", spinner="dots")
+@Halo(text="Capturing audio... press CTRL-C to stop...", spinner="dots")
 def capture_audio(capture_file_name: str, metadata_file_name: str, url: str):
     with open(capture_file_name, "wb") as output_file:
 
@@ -52,12 +52,16 @@ def capture_audio(capture_file_name: str, metadata_file_name: str, url: str):
                 json.dump(metadata, metadata_file)
 
             # Stream the audio to disk (with a stop action)
+            # Capture SIGINT
 
-            stop = False
-            while not stop:
-                output_file.write(response.raw.read())
-                print(response.raw)
-                stop = keyboard.is_pressed("x")
+            signal.signal(signal.SIGINT, signal.default_int_handler)
+
+            try:
+                while True:
+                    output_file.write(response.raw.read(1000))
+            except KeyboardInterrupt:
+                pass
+                
 
 
 @click.command()
