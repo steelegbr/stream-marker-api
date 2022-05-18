@@ -42,4 +42,4 @@ Specifically, we're interested in:
 
 A metadata block contains at least one byte. This first byte is the length of the rest of the block in multiples of 16 bytes. Thanks to [Johan Montelius](https://people.kth.se/~johanmon/dse/casty.pdf) for that useful snippet of information.
 
-Now playing information is encoded
+Now playing information is encoded in the stream at icy-metaint intervals. We simply read the string for x times 16 bytes (as mentioned in the header byte). That means we can have a ridiculously long now playing string but the likelihood is low.
