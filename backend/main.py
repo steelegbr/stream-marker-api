@@ -43,9 +43,6 @@ async def convert_file(
         ..., ge=1, title="The icy-metaint value from Shoutcast"
     ),
     bitrate: int = Form(..., ge=16, title="Stream bitrate in kbps"),
-    encoding: str = Form(
-        ..., regex="^audio\/\w+$", title="Content-Type headed for the stream"
-    ),
 ):
     markers, compressed_audio = to_markers_and_compressed_audio(
         stream.file, metadata_interval, bitrate, logger
