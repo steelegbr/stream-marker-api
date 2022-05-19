@@ -17,9 +17,10 @@ import click
 import json
 import signal
 from halo import Halo
-from requests import get
+from os.path import exists
+from requests import get, post
+from requests.exceptions import HTTPError
 from uuid import uuid4
-from urllib.error import HTTPError
 
 
 @click.group()
@@ -80,8 +81,46 @@ def capture(url: str):
 
 
 @click.command()
-def convert():
-    click.echo("Convert audio capture")
+@click.option(
+    "--uuid", required=True, help="UUID of the audio capture you wish to convert"
+)
+@click.option("--api", required=True, help="URL of the conversion API")
+def convert(uuid: str, api: str):
+    capture_file_name = f"{uuid}.capture"
+    metadata_file_name = f"{uuid}.json"
+    converted_file_name = f"{uuid}.wav"
+
+    # Check the files exist
+
+    if not (exists(capture_file_name) and exists(metadata_file_name)):
+        print(f"Failed to find both files for capture {uuid}.")
+        return
+
+    # Read in the metadata
+
+    with open(metadata_file_name, "r") as metadata_file:
+        metadata = json.load(metadata_file)
+
+    # Perform the conversion
+
+    spinner = Halo(text="Converting audio...")
+    spinner.start()
+
+    with open(capture_file_name, "rb") as capture_file:
+        files = {"stream": capture_file}
+
+        response = post(api, data=metadata, files=files)
+
+        try:
+            response.raise_for_status()
+            with open(converted_file_name, "wb") as converted_file:
+                for chunk in response.iter_content(1000):
+                    converted_file.write(chunk)
+            print(f"Output file {converted_file_name} successfully written.")
+        except HTTPError as e:
+            print(f"Failed to convert audio - HTTP error - {e}")
+
+    spinner.stop()
 
 
 interface.add_command(capture)

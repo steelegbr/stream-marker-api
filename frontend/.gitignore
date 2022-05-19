@@ -1,2 +1,4 @@
 *.json
 *.capture
+*.wav
+*.pkf
